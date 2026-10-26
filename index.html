@@ -51,6 +51,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold)}
 .tips{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;font-size:12px;color:var(--mu);line-height:1.6}.tips summary{color:var(--gold);font-weight:700;cursor:pointer}.tips p{font-size:12px;margin-top:6px}textarea{min-height:90px;resize:vertical;font-family:inherit}
 .g3{background:linear-gradient(135deg,#f6f2e4,#d8d0b0);color:#14301f}.g3 img{width:52px;height:58px;object-fit:cover;border-radius:10px;border:1px solid #14301f55}.chk{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--tx);line-height:1.4}.chk input{width:24px;height:24px;flex:none}
 .cloud .wipe{display:none}
+.guest .del,.guest .ed{display:none!important}
 .hint{font-size:11px;color:var(--mu);text-align:center;margin-top:14px;line-height:1.5}
 .err{color:var(--bad);font-size:12px;margin-top:8px;text-align:center}
 </style></head><body><div id="app">
@@ -90,24 +91,24 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold)}
 <p class="hint">Conservez bien votre matricule, présentez-le au tailleur.</p></section>
 
 <section id="login" class="hidden"><div class="card"><div class="top"><b>Accès Administrateur</b><button class="back" onclick="show('home')">Fermer</button></div>
-<p style="margin-bottom:10px">Mot de passe organisateur :</p><input id="pwd" type="password" placeholder="Mot de passe"><div class="err" id="lerr"></div><button class="cta" onclick="checkAdmin()">Déverrouiller</button></div></section>
+<p style="margin-bottom:10px">Code d’accès (administrateur ou invité) :</p><input id="pwd" type="password" placeholder="Code d’accès" autocomplete="off"><div class="err" id="lerr"></div><button class="cta" onclick="checkAdmin()">Déverrouiller</button></div></section>
 
-<section id="admin" class="hidden"><div class="card"><div class="top"><b>Registre F.K.C.S.</b><button class="back" onclick="show('home')">Quitter</button></div>
+<section id="admin" class="hidden"><div class="card"><div class="top"><b>Registre F.K.C.S.</b><button class="back" onclick="quit()">Quitter</button></div><p id="role" style="margin-bottom:10px;font-size:12px"></p><div class="err" id="aerr"></div>
 <div class="stats"><div><small>Total</small><b id="s0">0</b></div><div><small>Hommes</small><b id="s1">0</b></div><div><small>Femmes</small><b id="s2">0</b></div><div><small>Écharpes</small><b id="s3">0</b></div></div>
 <input id="q" placeholder="🔍 Rechercher nom, matricule, téléphone…" oninput="renderList()">
 <div style="display:flex;gap:8px;margin-top:8px"><button class="sec" style="margin:0" onclick="exportCSV()">📥 Excel (CSV)</button><button class="sec" style="margin:0" onclick="exportJSON()">JSON</button></div>
 <div id="list"></div>
 <button class="sec del wipe" onclick="wipe()">Tout effacer</button></div></section>
 
-<section id="detail" class="hidden"><div class="card"><div class="top"><button class="back" onclick="show('admin');renderList()">← Registre</button><b id="dm"></b></div><div class="rec" id="dd"></div><a id="dwa" target="_blank" rel="noopener"><button class="sec wa">💬 Contacter sur WhatsApp</button></a></div></section>
+<section id="detail" class="hidden"><div class="card"><div class="top"><button class="back" onclick="show('admin');renderList()">← Registre</button><b id="dm"></b></div><div class="rec" id="dd"></div><a id="dwa" target="_blank" rel="noopener"><button class="sec wa">💬 Contacter sur WhatsApp</button></a><button class="sec ed" id="edbtn">✏️ Modifier cette inscription</button></div></section>
 </div>
-<script>window.FKCS_CONFIG={firebase:{apiKey:"AIzaSyA-pwY-y1uLa445Wd1Pn16S40Tm4KOr-ro",authDomain:"fkcs-app.firebaseapp.com",projectId:"fkcs-app",appId:"1:850154177533:web:5f20dfdaf792f14ba18f94"},adminEmail:"METTRE-ICI-VOTRE-EMAIL-ADMIN"}; // ← à remplir (voir guide Firebase)</script>
+<script>window.FKCS_CONFIG={firebase:{apiKey:"AIzaSyA-pwY-y1uLa445Wd1Pn16S40Tm4KOr-ro",authDomain:"fkcs-app.firebaseapp.com",projectId:"fkcs-app",appId:"1:850154177533:web:5f20dfdaf792f14ba18f94"},adminEmail:"admin@fkcs-app.com",guestEmail:"guest@fkcs-app.com"}; // ← à remplir (voir guide Firebase)</script>
 <script>
 const H1=[['cou','Tour de cou'],['epaule','Carrure / épaule'],['poitrine','Tour de poitrine'],['manche','Longueur manche'],['long_tunique','Longueur tunique (sous genou)',1]];
 const H2=[['taille','Tour de taille'],['fesse','Tour de fesse/hanche'],['bas','Tour du bas (cheville)'],['haute','Partie haute (entrejambe)'],['longueur_p','Longueur pantalon',1]];
 const F=[['poitrine','Tour de poitrine'],['taille','Tour de taille'],['hanches','Tour de hanches'],['epaule','Carrure / épaule'],['manche','Longueur manche'],['bras','Tour de bras'],['buste','Longueur buste (épaule → taille)'],['longueur','Longueur totale robe'],['bas','Tour du bas de la robe',1]];
 const LBL={};[...H1,...H2,...F].forEach(x=>LBL[x[0]]=x[1]);LBL.std='Taille standard';LBL.remarque='Remarques';LBL.echarpe='Écharpes (nombre)';
-const $=id=>document.getElementById(id);let sec='',data=[];
+const $=id=>document.getElementById(id);let sec='',data=[],role='';
 const CLOUD=!!(window.FKCS_CONFIG&&FKCS_CONFIG.firebase.apiKey);
 const KEY='fkcs_inscriptions';
 if(CLOUD)document.body.classList.add('cloud');
@@ -133,23 +134,42 @@ async function submitForm(e){e.preventDefault();load();
  try{
   if(CLOUD){r.matricule=await FB.register(r)}
   else{const pre={homme:'H',femme:'F',echarpe:'E'}[sec];const n=Math.max(0,...data.filter(i=>i.section===sec).map(i=>parseInt(i.matricule.slice(2))||0))+1;r.matricule=pre+'-'+String(n).padStart(3,'0');data.push(r);save()}
- }catch(x){$('err').textContent='Connexion impossible. Vérifiez internet puis réessayez.';btn.disabled=false;btn.textContent='Valider mon inscription ➔';return}
+ }catch(x){$('err').textContent='Enregistrement impossible'+(x&&x.code?' ('+x.code+')':'')+'. Vérifiez internet puis réessayez.';btn.disabled=false;btn.textContent='Valider mon inscription ➔';return}
  btn.disabled=false;btn.textContent='Valider mon inscription ➔';
  $('mat').textContent=r.matricule;
  $('rd').innerHTML=`<b>Nom :</b> ${esc(prenom)} ${esc(nom)}<br><b>Tél :</b> ${esc(tel)}<br><b>Section :</b> ${{homme:'Homme',femme:'Femme',echarpe:'Écharpe seule'}[sec]}${m.echarpe!=='-'?'<br><b>Écharpes :</b> '+esc(m.echarpe):''}<br><b>Date :</b> ${esc(r.date)}`;
  const txt=`F.K.C.S. – Journée Culturelle 2027\nMatricule : ${r.matricule}\n${prenom} ${nom}\nMesures : ${Object.entries(m).filter(x=>x[1]!=='-').map(x=>(LBL[x[0]]||'Taille std')+' '+x[1]).join(', ')}`;
  $('wabtn').onclick=()=>window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
  show('recu')}
-async function checkAdmin(){const p=$('pwd').value;
- if(CLOUD){$('lerr').textContent='Vérification…';try{data=await FB.login(p);$('lerr').textContent='';show('admin');renderList()}catch(x){$('lerr').textContent='Mot de passe incorrect ou connexion impossible'}return}
- if(p==='FKCS2027'){load();show('admin');renderList()}else $('lerr').textContent='Mot de passe incorrect'}
-function renderList(){load();$('s0').textContent=data.length;$('s1').textContent=data.filter(i=>i.section==='homme').length;$('s2').textContent=data.filter(i=>i.section==='femme').length;$('s3').textContent=data.reduce((a,d)=>a+(parseInt(d.mesures&&d.mesures.echarpe)||0),0);
+async function checkAdmin(){const p=$('pwd').value.trim();
+ if(CLOUD){$('lerr').textContent='Vérification…';try{role=await FB.login(p)}catch(x){$('lerr').textContent='Code incorrect ou connexion impossible';return}$('lerr').textContent='';enter();return}
+ if(p==='FKCS2027')role='admin';else if(p==='FKCS2027GUEST')role='guest';else{$('lerr').textContent='Code incorrect';return}
+ load();enter()}
+function enter(){document.body.classList.toggle('guest',role!=='admin');$('role').textContent=role==='admin'?'👑 Accès complet (voir, modifier, supprimer)':'👁️ Consultation seule';$('aerr').textContent='';show('admin');
+ if(CLOUD){data=[];$('list').innerHTML='<p style="text-align:center;margin:14px 0">Chargement…</p>';
+  FB.watch((rows,err)=>{if(err){$('aerr').textContent='Lecture impossible ('+(err.code||'erreur')+'). Vérifiez les règles Firebase.';return}$('aerr').textContent='';data=rows;if(!$('admin').classList.contains('hidden'))renderList()})}
+ else renderList()}
+function quit(){if(CLOUD&&window.FB)FB.logout();role='';document.body.classList.remove('guest');if(CLOUD)data=[];show('home')}
+function renderList(){load();if(!Array.isArray(data))data=[];$('s0').textContent=data.length;$('s1').textContent=data.filter(i=>i.section==='homme').length;$('s2').textContent=data.filter(i=>i.section==='femme').length;$('s3').textContent=data.reduce((a,d)=>a+(parseInt(d.mesures&&d.mesures.echarpe)||0),0);
  const q=$('q').value.toLowerCase();const l=data.map((d,i)=>[d,i]).filter(([d])=>!q||(d.matricule+d.prenom+d.nom+d.telephone).toLowerCase().includes(q));
  $('list').innerHTML=l.length?l.map(([d,i])=>`<div class="row"><div><b>${esc(d.matricule)}</b> ${esc(d.prenom)} ${esc(d.nom)}${d.mesures&&d.mesures.echarpe&&d.mesures.echarpe!=='-'?' 🧣×'+esc(d.mesures.echarpe):''}<em>${esc(d.telephone)}</em></div><div><button class="sm" onclick="detail(${i})">Voir</button> <button class="sm del" onclick="del(${i})">✕</button></div></div>`).join(''):'<p style="text-align:center;margin:14px 0">Aucune inscription.</p>'}
 function detail(i){const d=data[i];$('dm').textContent=d.matricule;
  $('dd').innerHTML=`<b>${esc(d.prenom)} ${esc(d.nom)}</b><br>Tél : ${esc(d.telephone)}<br>Inscrit le ${esc(d.date)}<hr style="border-color:#21412f">`+Object.entries(d.mesures).filter(x=>x[1]!=='-').map(([k,v])=>`${esc(LBL[k]||'Taille standard')} : <b>${esc(v)}${['std','remarque','echarpe'].includes(k)?'':' cm'}</b>`).join('<br>');
- $('dwa').href='https://wa.me/'+d.telephone.replace(/\D/g,'');show('detail')}
-async function del(i){if(confirm('Supprimer cette inscription ?')){if(CLOUD){try{await FB.remove(data[i].matricule)}catch(x){alert('Suppression impossible');return}}data.splice(i,1);save();renderList()}}
+ $('dwa').href='https://wa.me/'+d.telephone.replace(/\D/g,'');$('edbtn').classList.remove('hidden');$('edbtn').onclick=()=>edit(i);show('detail')}
+async function del(i){if(role!=='admin')return;if(confirm('Supprimer cette inscription ?')){
+ if(CLOUD){try{await FB.remove(data[i].matricule)}catch(x){alert('Suppression impossible ('+(x.code||'erreur')+')')}}
+ else{data.splice(i,1);save();renderList()}}}
+function edit(i){const d=data[i],m=d.mesures||{};const keys=d.section==='homme'?[...H1,...H2]:d.section==='femme'?[...F,['std','Taille standard (XS…5XL)']]:[];
+ let h=`<div class="grid"><div><label>Prénom</label><input id="e_prenom" value="${esc(d.prenom)}"></div><div><label>Nom</label><input id="e_nom" value="${esc(d.nom)}"></div><div class="full"><label>Téléphone</label><input id="e_tel" value="${esc(d.telephone)}"></div>`;
+ keys.forEach(([k,l])=>{h+=`<div class="full"><label>${l}${k==='std'?'':' (cm)'}</label><input id="e_${k}" value="${esc(m[k]&&m[k]!=='-'?m[k]:'')}"></div>`});
+ h+=`<div class="full"><label>Écharpes (nombre, 0 = aucune)</label><input id="e_echarpe" type="number" min="0" max="20" value="${esc(m.echarpe&&m.echarpe!=='-'?m.echarpe:0)}"></div><div class="full"><label>Remarques</label><textarea id="e_remarque">${esc(m.remarque&&m.remarque!=='-'?m.remarque:'')}</textarea></div></div><button class="cta" onclick="saveEdit(${i})">Enregistrer</button><button class="sec" onclick="detail(${i})">Annuler</button>`;
+ $('dd').innerHTML=h;$('edbtn').classList.add('hidden')}
+async function saveEdit(i){if(role!=='admin')return;const d=data[i],m={...(d.mesures||{})};
+ (d.section==='homme'?[...H1,...H2]:d.section==='femme'?[...F,['std']]:[]).forEach(([k])=>{m[k]=$('e_'+k).value.trim()||'-'});
+ const n=parseInt($('e_echarpe').value)||0;m.echarpe=n>0?String(Math.min(20,n)):'-';m.remarque=$('e_remarque').value.trim()||'-';
+ const u={prenom:$('e_prenom').value.trim()||d.prenom,nom:$('e_nom').value.trim()||d.nom,telephone:$('e_tel').value.trim()||d.telephone,mesures:m};
+ try{if(CLOUD)await FB.update(d.matricule,u);Object.assign(d,u);if(!CLOUD)save()}catch(x){alert('Modification impossible ('+(x.code||'erreur')+')');return}
+ detail(i)}
 function wipe(){if(confirm('Effacer TOUTES les inscriptions ?')){data=[];save();renderList()}}
 function dl(name,mime,txt){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:mime}));a.download=name;document.body.appendChild(a);a.click();a.remove()}
 function exportJSON(){dl('inscriptions_fkcs.json','application/json',JSON.stringify(data,null,2))}
@@ -162,24 +182,21 @@ $('inst').textContent=ios?'📲 Pour l’installer : Partager → « Sur l’éc
 </script><script type="module">
 const C=window.FKCS_CONFIG;
 if(C.firebase.apiKey){
- const V='10.12.2',G='https://www.gstatic.com/firebasejs/'+V+'/';
+ const G='https://www.gstatic.com/firebasejs/10.12.2/';
  const {initializeApp}=await import(G+'firebase-app.js');
- const {getFirestore,doc,runTransaction,collection,getDocs,query,orderBy,deleteDoc}=await import(G+'firebase-firestore.js');
- const {getAuth,signInWithEmailAndPassword}=await import(G+'firebase-auth.js');
- const app=initializeApp(C.firebase),db=getFirestore(app),auth=getAuth(app);
+ const {getFirestore,doc,runTransaction,collection,onSnapshot,deleteDoc,updateDoc}=await import(G+'firebase-firestore.js');
+ const {getAuth,signInWithEmailAndPassword,signOut}=await import(G+'firebase-auth.js');
+ const app=initializeApp(C.firebase),db=getFirestore(app),auth=getAuth(app);let unsub=null;
  window.FB={
   async register(r){const pre={homme:'H',femme:'F',echarpe:'E'}[r.section];let mat;
    await runTransaction(db,async tx=>{const cr=doc(db,'counters',r.section);const c=await tx.get(cr);const n=(c.exists()?c.data().n:0)+1;mat=pre+'-'+String(n).padStart(3,'0');tx.set(cr,{n});tx.set(doc(db,'inscriptions',mat),{...r,matricule:mat,ts:Date.now()})});
    return mat},
-  async login(p){
-      if(p === 'FKCS2027' || p === 'FKCS2027GUEST'){
-        return true;
-      } else {
-        throw new Error("Mot de passe incorrect");
-      }
-    },
-    async remove(id){await deleteDoc(doc(db,'inscriptions',id))}
-  };
+  async login(code){try{await signInWithEmailAndPassword(auth,C.adminEmail,code);return 'admin'}catch(e){await signInWithEmailAndPassword(auth,C.guestEmail,code);return 'guest'}},
+  watch(cb){if(unsub)unsub();unsub=onSnapshot(collection(db,'inscriptions'),s=>cb(s.docs.map(d=>d.data()).sort((a,b)=>(a.ts||0)-(b.ts||0))),e=>cb(null,e))},
+  async logout(){if(unsub)unsub();unsub=null;try{await signOut(auth)}catch(e){}},
+  update:(id,u)=>updateDoc(doc(db,'inscriptions',id),u),
+  remove:id=>deleteDoc(doc(db,'inscriptions',id))
+ };
 }
 </script>
 </body></html>
