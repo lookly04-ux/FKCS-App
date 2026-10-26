@@ -142,7 +142,7 @@ async function submitForm(e){e.preventDefault();load();
  $('wabtn').onclick=()=>window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
  show('recu')}
 async function checkAdmin(){const p=$('pwd').value.trim();
- if(CLOUD){$('lerr').textContent='Vérification…';try{role=await FB.login(p)}catch(x){$('lerr').textContent='Code incorrect ou connexion impossible';return}$('lerr').textContent='';enter();return}
+ if(CLOUD){$('lerr').textContent='Vérification…';try{role=await FB.login(p)}catch(x){const c=(x&&x.code)||'erreur';$('lerr').textContent=/invalid-credential|wrong-password|user-not-found|invalid-login/.test(c)?'Code incorrect, ou compte non créé dans Firebase ('+c+')':'Connexion impossible : '+c;return}$('lerr').textContent='';enter();return}
  if(p==='FKCS2027')role='admin';else if(p==='FKCS2027GUEST')role='guest';else{$('lerr').textContent='Code incorrect';return}
  load();enter()}
 function enter(){document.body.classList.toggle('guest',role!=='admin');$('role').textContent=role==='admin'?'👑 Accès complet (voir, modifier, supprimer)':'👁️ Consultation seule';$('aerr').textContent='';show('admin');
