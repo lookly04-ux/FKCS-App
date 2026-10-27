@@ -51,6 +51,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold)}
 .tips{background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin:8px 0;font-size:12px;color:var(--mu);line-height:1.6}.tips summary{color:var(--gold);font-weight:700;cursor:pointer}.tips p{font-size:12px;margin-top:6px}textarea{min-height:90px;resize:vertical;font-family:inherit}
 .g3{background:linear-gradient(135deg,#f6f2e4,#d8d0b0);color:#14301f}.g3 img{width:52px;height:58px;object-fit:cover;border-radius:10px;border:1px solid #14301f55}.chk{display:flex;gap:10px;align-items:center;font-size:13px;color:var(--tx);line-height:1.4}.chk input{width:24px;height:24px;flex:none}
 .cloud .wipe{display:none}
+.cl{display:none}.cloud .cl{display:block}
+#pr{display:none}
+@media print{body{background:#fff!important;color:#000!important;display:block!important}#app,#guide{display:none!important}#pr{display:block!important;color:#000;font-family:Arial,sans-serif}#pr h1{font-size:18px;margin:0}#pr .ph{display:flex;gap:10px;align-items:center;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:10px}#pr .ph img{width:46px;height:46px;border-radius:50%}.pc{border:1.5px solid #000;border-radius:6px;padding:8px;margin:0 0 10px;page-break-inside:avoid}.pc h2{font-size:14px;margin:0 0 6px;background:#eee;padding:4px}.pm{display:grid;grid-template-columns:repeat(3,1fr);gap:4px 10px;font-size:12px}.pm div{border-bottom:1px dotted #888;padding:2px 0}#pr table{width:100%;border-collapse:collapse;font-size:12px}#pr td,#pr th{border:1px solid #000;padding:5px;text-align:left}#pr tr{page-break-inside:avoid}}
 .guidebtn{width:100%;padding:14px;border-radius:16px;margin-bottom:12px;background:#1b3827;border:2px solid var(--gold);color:var(--gold);font-weight:700;font-size:15px;animation:gp 2.2s infinite}.guidebtn small{display:block;color:var(--mu);font-weight:400;font-size:11px;margin-top:3px}
 @keyframes gp{0%,100%{box-shadow:0 0 0 0 #d4af3755}50%{box-shadow:0 0 0 8px #d4af3700}}
 #guide{position:fixed;inset:0;z-index:50;background:rgba(5,12,8,.97);display:flex;flex-direction:column;align-items:center;padding:calc(12px + env(safe-area-inset-top,0px)) 14px calc(14px + env(safe-area-inset-bottom,0px));overflow:auto}
@@ -86,7 +89,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold)}
 <form class="card" onsubmit="submitForm(event)" novalidate>
 <h3>1. Coordonnées</h3>
 <div class="grid"><div><label>Prénom *</label><input id="prenom" autocomplete="given-name"></div><div><label>Nom *</label><input id="nom" autocomplete="family-name"></div>
-<div class="full"><label>Téléphone (WhatsApp) *</label><input id="tel" type="tel" inputmode="tel" placeholder="Ex : 77 000 00 00"></div></div>
+<div class="full"><label>Téléphone (WhatsApp) * — choisissez d’abord le pays</label><div style="display:flex;gap:8px"><select id="cc" style="width:46%;flex:none" onchange="$('cco').classList.toggle('hidden',this.value!=='x')"><option value="221">🇸🇳 Sénégal +221</option><option value="222">🇲🇷 Mauritanie +222</option><option value="33">🇫🇷 France +33</option><option value="49">🇩🇪 Allemagne +49</option><option value="32">🇧🇪 Belgique +32</option><option value="34">🇪🇸 Espagne +34</option><option value="x">🌍 Autre pays</option></select><input id="tel" type="tel" inputmode="tel" placeholder="Votre numéro" autocomplete="tel-national"></div><input id="cco" class="hidden" inputmode="numeric" placeholder="Indicatif du pays, ex : 39" style="margin-top:8px"></div></div>
 <div id="fh" class="hidden"><h3 style="margin-top:18px">2. Mesures (cm)</h3><div class="sub">— TUNIQUE —</div><div class="grid" id="gh1"></div><div class="sub">— PANTALON —</div><div class="grid" id="gh2"></div></div>
 <div id="ff" class="hidden"><h3 style="margin-top:18px">2. Mesures robe (cm)</h3><details class="tips"><summary>📏 Comment prendre chaque mesure ?</summary><p><b>Poitrine</b> : autour de la partie la plus forte, mètre bien droit.<br><b>Taille</b> : à l’endroit le plus fin du ventre.<br><b>Hanches</b> : autour de la partie la plus large.<br><b>Épaule</b> : d’un bout d’épaule à l’autre, dans le dos.<br><b>Manche</b> : du bout de l’épaule jusqu’où vous voulez que la manche s’arrête.<br><b>Tour de bras</b> : autour du haut du bras.<br><b>Buste</b> : de l’épaule (près du cou) jusqu’à la taille.<br><b>Longueur robe</b> : de l’épaule jusqu’à la longueur voulue (genou, cheville…).<br><b>Tour du bas</b> : largeur voulue au bas de la robe.<br><i>Pas sûre ? Mesurez à plat une robe qui vous va bien, ou écrivez vos précisions dans la case « Remarques » plus bas.</i></p></details><div class="grid" id="gf"></div>
 <label style="margin-top:12px">Ou taille standard (si pas de mesures)</label><select id="std"><option value="">— Choisir —</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option><option>3XL</option><option>4XL</option><option>5XL</option></select></div>
@@ -112,11 +115,14 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold)}
 <div class="stats"><div><small>Total</small><b id="s0">0</b></div><div><small>Hommes</small><b id="s1">0</b></div><div><small>Femmes</small><b id="s2">0</b></div><div><small>Écharpes</small><b id="s3">0</b></div></div>
 <input id="q" placeholder="🔍 Rechercher nom, matricule, téléphone…" oninput="renderList()">
 <div style="display:flex;gap:8px;margin-top:8px"><button class="sec" style="margin:0" onclick="exportCSV()">📥 Excel (CSV)</button><button class="sec" style="margin:0" onclick="exportJSON()">JSON</button></div>
+<div style="display:flex;gap:6px;margin-top:8px"><button class="sec" style="margin:0" onclick="printList('femme')">🖨️ Femmes</button><button class="sec" style="margin:0" onclick="printList('homme')">🖨️ Hommes</button><button class="sec" style="margin:0" onclick="printList('echarpe')">🖨️ Écharpes</button></div>
+<button class="sec ed cl" onclick="lockOld()">🔒 Verrouiller les anciens numéros (une seule fois)</button>
 <div id="list"></div>
 <button class="sec del wipe" onclick="wipe()">Tout effacer</button></div></section>
 
 <section id="detail" class="hidden"><div class="card"><div class="top"><button class="back" onclick="show('admin');renderList()">← Registre</button><b id="dm"></b></div><div class="rec" id="dd"></div><a id="dwa" target="_blank" rel="noopener"><button class="sec wa">💬 Contacter sur WhatsApp</button></a><button class="sec ed" id="edbtn">✏️ Modifier cette inscription</button></div></section>
 </div>
+<div id="pr"></div>
 <div id="guide" class="hidden"><div class="gtop"><b id="gstep"></b><button class="back" onclick="closeGuide()">✕ Fermer</button></div>
 <div class="gm" id="gm"></div><p id="gcap"></p><div id="gdots"></div>
 <div class="gctl"><button onclick="gnav(-1)">◀</button><button class="main" id="gpp" onclick="gtoggle()">⏸ Pause</button><button onclick="gnav(1)">▶</button></div>
@@ -138,27 +144,28 @@ function fields(arr,p){return arr.map(([k,l,f])=>`<div class="${f?'full':''}"><l
 $('gh1').innerHTML=fields(H1,'h_');$('gh2').innerHTML=fields(H2,'h_');$('gf').innerHTML=fields(F,'f_');
 function show(v){['home','form','recu','login','admin','detail'].forEach(s=>$(s).classList.toggle('hidden',s!==v));scrollTo(0,0);
  if(v==='login'){$('pwd').value='';$('lerr').textContent=''}if(v==='home')document.querySelector('form').reset()}
-function choose(s){sec=s;$('ftitle').textContent=s==='homme'?'Inscription Homme':s==='femme'?'Inscription Femme':'Réservation écharpe';$('sc').checked=s==='echarpe';$('scbox').classList.toggle('hidden',s==='echarpe');$('scq').classList.toggle('hidden',s!=='echarpe');$('fh').classList.toggle('hidden',s!=='homme');$('ff').classList.toggle('hidden',s!=='femme');$('err').textContent='';show('form');$('fh').classList.toggle('hidden',s!=='homme');$('ff').classList.toggle('hidden',s!=='femme')}
+function choose(s){sec=s;$('ftitle').textContent=s==='homme'?'Inscription Homme':s==='femme'?'Inscription Femme':'Réservation écharpe';$('sc').checked=s==='echarpe';$('scbox').classList.toggle('hidden',s==='echarpe');$('scq').classList.toggle('hidden',s!=='echarpe');$('fh').classList.toggle('hidden',s!=='homme');$('ff').classList.toggle('hidden',s!=='femme');$('err').textContent='';show('form');$('cco').classList.toggle('hidden',$('cc').value!=='x');$('fh').classList.toggle('hidden',s!=='homme');$('ff').classList.toggle('hidden',s!=='femme')}
 async function submitForm(e){e.preventDefault();load();
- const prenom=$('prenom').value.trim(),nom=$('nom').value.trim(),tel=$('tel').value.trim();
- if(!prenom||!nom||tel.replace(/\D/g,'').length<8){$('err').textContent='Merci de remplir prénom, nom et un numéro valide.';return}
+ const prenom=$('prenom').value.trim(),nom=$('nom').value.trim();const T=buildTel();
+ if(!prenom||!nom){$('err').textContent='Merci de remplir le prénom et le nom.';return}
+ if(T.err){$('err').textContent=T.err;return}const tel=T.full;
  const m={};
  if(sec==='homme'){[...H1,...H2].forEach(([k])=>m[k]=$('h_'+k).value||'-')}
  else if(sec==='femme'){F.forEach(([k])=>m[k]=$('f_'+k).value||'-');m.std=$('std').value||'-'}
  m.echarpe=$('sc').checked?String(Math.min(20,Math.max(1,parseInt($('scn').value)||1))):'-';
  m.remarque=$('note').value.trim()||'-';
  if(Object.values(m).every(v=>v==='-')){$('err').textContent='Merci d’indiquer vos mesures, une taille standard ou vos remarques.';return}
- const r={section:sec,prenom,nom,telephone:tel,mesures:m,date:new Date().toLocaleString('fr-FR')};
+ const r={section:sec,prenom,nom,telephone:tel,mesures:m,date:new Date().toLocaleString('fr-FR')};r.lock=lockKey(sec,tel);if(sec!=='echarpe'&&m.echarpe!=='-')r.lock2=lockKey('echarpe',tel);
  const btn=document.querySelector('.cta');btn.disabled=true;btn.textContent='Envoi en cours…';$('err').textContent='';
  try{
   if(CLOUD){r.matricule=await FB.register(r)}
-  else{const pre={homme:'H',femme:'F',echarpe:'E'}[sec];const n=Math.max(0,...data.filter(i=>i.section===sec).map(i=>parseInt(i.matricule.slice(2))||0))+1;r.matricule=pre+'-'+String(n).padStart(3,'0');data.push(r);save()}
- }catch(x){$('err').textContent='Enregistrement impossible'+(x&&x.code?' ('+x.code+')':'')+'. Vérifiez internet puis réessayez.';btn.disabled=false;btn.textContent='Valider mon inscription ➔';return}
+  else{const ws=sec==='echarpe'||m.echarpe!=='-';if(data.some(i=>last8(i.telephone)===last8(tel)&&(i.section===sec||(ws&&hasScarf(i)))))throw{code:'duplicate'};const pre={homme:'H',femme:'F',echarpe:'E'}[sec];const n=Math.max(0,...data.filter(i=>i.section===sec).map(i=>parseInt(i.matricule.slice(2))||0))+1;r.matricule=pre+'-'+String(n).padStart(3,'0');data.push(r);save()}
+ }catch(x){$('err').textContent=(x&&(x.code==='duplicate'||x.code==='permission-denied'))?'Ce numéro est déjà inscrit dans cette section, ou a déjà réservé une écharpe. Pour corriger une inscription, contactez un organisateur.':'Enregistrement impossible'+(x&&x.code?' ('+x.code+')':'')+'. Vérifiez internet puis réessayez.';btn.disabled=false;btn.textContent='Valider mon inscription ➔';return}
  btn.disabled=false;btn.textContent='Valider mon inscription ➔';
  $('mat').textContent=r.matricule;
  $('rd').innerHTML=`<b>Nom :</b> ${esc(prenom)} ${esc(nom)}<br><b>Tél :</b> ${esc(tel)}<br><b>Section :</b> ${{homme:'Homme',femme:'Femme',echarpe:'Écharpe seule'}[sec]}${m.echarpe!=='-'?'<br><b>Écharpes :</b> '+esc(m.echarpe):''}<br><b>Date :</b> ${esc(r.date)}`;
  const txt=`F.K.C.S. – Journée Culturelle 2027\nMatricule : ${r.matricule}\n${prenom} ${nom}\nMesures : ${Object.entries(m).filter(x=>x[1]!=='-').map(x=>(LBL[x[0]]||'Taille std')+' '+x[1]).join(', ')}`;
- $('wabtn').onclick=()=>window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank');
+ $('wabtn').onclick=()=>window.open('https://wa.me/'+waNum(tel)+'?text='+encodeURIComponent(txt),'_blank');
  show('recu')}
 async function checkAdmin(){const p=$('pwd').value.trim();
  if(CLOUD){$('lerr').textContent='Vérification…';try{role=await FB.login(p)}catch(x){const c=(x&&x.code)||'erreur';$('lerr').textContent=/invalid-credential|wrong-password|user-not-found|invalid-login/.test(c)?'Code incorrect, ou compte non créé dans Firebase ('+c+')':'Connexion impossible : '+c;return}$('lerr').textContent='';enter();return}
@@ -174,7 +181,7 @@ function renderList(){load();if(!Array.isArray(data))data=[];$('s0').textContent
  $('list').innerHTML=l.length?l.map(([d,i])=>`<div class="row"><div><b>${esc(d.matricule)}</b> ${esc(d.prenom)} ${esc(d.nom)}${d.mesures&&d.mesures.echarpe&&d.mesures.echarpe!=='-'?' 🧣×'+esc(d.mesures.echarpe):''}<em>${esc(d.telephone)}</em></div><div><button class="sm" onclick="detail(${i})">Voir</button> <button class="sm del" onclick="del(${i})">✕</button></div></div>`).join(''):'<p style="text-align:center;margin:14px 0">Aucune inscription.</p>'}
 function detail(i){const d=data[i];$('dm').textContent=d.matricule;
  $('dd').innerHTML=`<b>${esc(d.prenom)} ${esc(d.nom)}</b><br>Tél : ${esc(d.telephone)}<br>Inscrit le ${esc(d.date)}<hr style="border-color:#21412f">`+Object.entries(d.mesures).filter(x=>x[1]!=='-').map(([k,v])=>`${esc(LBL[k]||'Taille standard')} : <b>${esc(v)}${['std','remarque','echarpe'].includes(k)?'':' cm'}</b>`).join('<br>');
- $('dwa').href='https://wa.me/'+d.telephone.replace(/\D/g,'');$('edbtn').classList.remove('hidden');$('edbtn').onclick=()=>edit(i);show('detail')}
+ $('dwa').href='https://wa.me/'+waNum(d.telephone);$('edbtn').classList.remove('hidden');$('edbtn').onclick=()=>edit(i);show('detail')}
 async function del(i){if(role!=='admin')return;if(confirm('Supprimer cette inscription ?')){
  if(CLOUD){try{await FB.remove(data[i].matricule)}catch(x){alert('Suppression impossible ('+(x.code||'erreur')+')')}}
  else{data.splice(i,1);save();renderList()}}}
@@ -186,20 +193,59 @@ function edit(i){const d=data[i],m=d.mesures||{};const keys=d.section==='homme'?
 async function saveEdit(i){if(role!=='admin')return;const d=data[i],m={...(d.mesures||{})};
  (d.section==='homme'?[...H1,...H2]:d.section==='femme'?[...F,['std']]:[]).forEach(([k])=>{m[k]=$('e_'+k).value.trim()||'-'});
  const n=parseInt($('e_echarpe').value)||0;m.echarpe=n>0?String(Math.min(20,n)):'-';m.remarque=$('e_remarque').value.trim()||'-';
- const u={prenom:$('e_prenom').value.trim()||d.prenom,nom:$('e_nom').value.trim()||d.nom,telephone:$('e_tel').value.trim()||d.telephone,mesures:m};
- try{if(CLOUD)await FB.update(d.matricule,u);Object.assign(d,u);if(!CLOUD)save()}catch(x){alert('Modification impossible ('+(x.code||'erreur')+')');return}
+ const tel2=fixTel($('e_tel').value);if(!tel2){alert('Numéro invalide. Écrivez-le avec l’indicatif, par exemple +221771234567');return}
+ const u={prenom:$('e_prenom').value.trim()||d.prenom,nom:$('e_nom').value.trim()||d.nom,telephone:tel2,mesures:m};
+ const keys=x=>{const k=[lockKey(x.section,x.telephone)];if(x.section!=='echarpe'&&x.mesures&&x.mesures.echarpe&&x.mesures.echarpe!=='-')k.push(lockKey('echarpe',x.telephone));return k};
+ const oldK=keys(d),newK=keys({section:d.section,telephone:tel2,mesures:m});
+ try{if(CLOUD)await FB.update(d.matricule,u,oldK,newK);else if(data.some(o=>o!==d&&keys(o).some(k=>newK.includes(k))))throw{code:'duplicate'};Object.assign(d,u);if(!CLOUD)save()}
+ catch(x){alert(x.code==='duplicate'?'Ce numéro est déjà utilisé par une autre inscription.':'Modification impossible ('+(x.code||'erreur')+')');return}
  detail(i)}
 function wipe(){if(confirm('Effacer TOUTES les inscriptions ?')){data=[];save();renderList()}}
 function dl(name,mime,txt){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([txt],{type:mime}));a.download=name;document.body.appendChild(a);a.click();a.remove()}
 function exportJSON(){dl('inscriptions_fkcs.json','application/json',JSON.stringify(data,null,2))}
 function exportCSV(){const keys=[...new Set([...H1,...H2,...F].map(x=>x[0]).concat('std','remarque','echarpe'))];
  const rows=[['Matricule','Section','Prénom','Nom','Téléphone','Date',...keys.map(k=>k==='std'?'Taille std':k==='remarque'?'Remarques':k==='echarpe'?'Écharpes (nb)':LBL[k]+' (cm)')]];
- data.forEach(d=>rows.push([d.matricule,d.section,d.prenom,d.nom,d.telephone,d.date,...keys.map(k=>d.mesures[k]&&d.mesures[k]!=='-'?d.mesures[k]:'')]));
+ data.forEach(d=>rows.push([d.matricule,d.section,d.prenom,d.nom,'="'+d.telephone+'"',d.date,...keys.map(k=>d.mesures[k]&&d.mesures[k]!=='-'?d.mesures[k]:'')]));
  dl('inscriptions_fkcs.csv','text/csv','\ufeff'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(';')).join('\n'))}
+const LEN={221:[9,9],222:[8,8],33:[9,9],32:[8,9],34:[9,9],49:[10,11]};
+function last8(s){return String(s||'').replace(/\D/g,'').slice(-8)}
+function lockKey(sec,tel){return sec+'_'+last8(tel)}
+function hasScarf(d){return d.section==='echarpe'||!!(d.mesures&&d.mesures.echarpe&&d.mesures.echarpe!=='-')}
+function buildTel(){let cc=$('cc').value;if(cc==='x')cc=($('cco').value||'').replace(/\D/g,'');
+ const raw=$('tel').value.trim();let d=raw.replace(/\D/g,'');
+ if(!d)return{err:'Merci d’écrire votre numéro de téléphone.'};
+ if(raw.startsWith('+')||d.startsWith('00')){d=d.replace(/^00/,'');return d.length>=9&&d.length<=15?{full:'+'+d}:{err:'Numéro invalide. Vérifiez-le.'}}
+ if(!cc)return{err:'Écrivez l’indicatif du pays (ex : 39).'};
+ const z=d.startsWith('0');d=d.replace(/^0+/,'');
+ if((cc==='221'||cc==='222')&&z)return{err:'Ce numéro commence par 0 : vérifiez le pays choisi (ex : France).'};
+ const L=LEN[cc]||[7,12];if(d.length<L[0]||d.length>L[1])return{err:'Numéro incomplet ou trop long pour ce pays. Vérifiez-le.'};
+ return{full:'+'+cc+d}}
+function fixTel(s){s=String(s||'').trim();let d=s.replace(/\D/g,'');if(!d)return '';
+ if(s.startsWith('+'))return d.length>=9&&d.length<=15?'+'+d:'';
+ if(d.startsWith('00')){d=d.slice(2);return d.length>=9&&d.length<=15?'+'+d:''}
+ if(d.length===10&&d[0]==='0')d='33'+d.slice(1);else if(d.length===9&&d[0]==='7')d='221'+d;else if(d.length===8)d='222'+d;
+ return d.length>=9&&d.length<=15?'+'+d:''}
+function waNum(t){return (fixTel(t)||'').slice(1)||String(t||'').replace(/\D/g,'')}
+function printList(sec){load();const L=data.filter(d=>sec==='echarpe'?hasScarf(d):d.section===sec).sort((a,b)=>String(a.matricule).localeCompare(String(b.matricule),undefined,{numeric:true}));
+ if(!L.length){alert('Aucune inscription dans cette liste.');return}
+ const T={femme:'Liste FEMMES : robes et tenues',homme:'Liste HOMMES : tunique et pantalon',echarpe:'Liste ÉCARPES : réservations'}[sec].replace('ÉCARPES','ÉCHARPES');
+ let h='<div class="ph"><img src="'+document.querySelector('header img').src+'"><div><h1>F.K.C.S. – '+T+'</h1><div style="font-size:12px">'+L.length+' inscription(s) – imprimé le '+new Date().toLocaleDateString('fr-FR')+'</div></div></div>';
+ if(sec==='echarpe'){let tot=0;h+='<table><tr><th>N°</th><th>Matricule</th><th>Nom et prénom</th><th>Téléphone</th><th>Quantité</th></tr>';
+  L.forEach((d,i)=>{const q=parseInt(d.mesures&&d.mesures.echarpe)||0;tot+=q;h+='<tr><td>'+(i+1)+'</td><td>'+esc(d.matricule)+'</td><td>'+esc(d.nom)+' '+esc(d.prenom)+'</td><td>'+esc(d.telephone)+'</td><td><b>'+q+'</b></td></tr>'});
+  h+='<tr><td colspan="4"><b>TOTAL À COMMANDER</b></td><td><b>'+tot+'</b></td></tr></table>'}
+ else{const K=sec==='homme'?[...H1.map(x=>['T',x]),...H2.map(x=>['P',x])]:F.map(x=>['',x]);
+  L.forEach(d=>{const m=d.mesures||{};h+='<div class="pc"><h2>'+esc(d.matricule)+' – '+esc(d.nom)+' '+esc(d.prenom)+' – Tél : '+esc(d.telephone)+'</h2><div class="pm">'+
+   K.map(([g,[k,l]])=>'<div>'+(g==='T'?'Tunique : ':g==='P'?'Pantalon : ':'')+esc(l)+' : <b>'+esc(m[k]&&m[k]!=='-'?m[k]+' cm':'—')+'</b></div>').join('')+
+   (sec==='femme'?'<div>Taille standard : <b>'+esc(m.std&&m.std!=='-'?m.std:'—')+'</b></div>':'')+
+   '<div>Écharpes : <b>'+esc(m.echarpe&&m.echarpe!=='-'?m.echarpe:'0')+'</b></div></div>'+
+   (m.remarque&&m.remarque!=='-'?'<div style="font-size:12px;margin-top:6px"><b>Remarques :</b> '+esc(m.remarque)+'</div>':'')+'</div>'})}
+ $('pr').innerHTML=h;setTimeout(()=>window.print(),250)}
+async function lockOld(){if(role!=='admin'||!CLOUD)return;if(!confirm('Enregistrer tous les anciens numéros comme « déjà inscrits » ? Aucune inscription ne sera modifiée ni supprimée.'))return;
+ try{const r=await FB.lock(data);alert(r.n+' numéro(s) verrouillé(s).'+(r.dups.length?'\nDoublons à vérifier : '+r.dups.join(', '):'\nAucun doublon trouvé.'))}catch(x){alert('Impossible ('+(x.code||'erreur')+')')}}
 const GUIDE_AUDIO=[]; // option : ['audio/1.mp3','audio/2.mp3',…] pour utiliser votre propre voix (wolof, pulaar…)
 const GS=[
 {t:'Bonjour ! Voici comment vous inscrire, en deux minutes. Sur la page d’accueil, appuyez sur Homme si vous êtes un homme, sur Femme si vous êtes une femme, ou sur Réserver une écharpe si vous voulez seulement une écharpe.',tg:['a','b','c'],m:`<div style="text-align:center;margin-bottom:10px"><span class="tag" style="font-size:9px">Journée Culturelle 2027</span><div style="font-family:Georgia,serif;font-size:16px;margin:6px 0">Mesures et Uniformes</div></div><div class="mb g1" data-t="a">👔 Homme : Tunique et Pantalon</div><div class="mb g2" data-t="b">👗 Femme : Robe et Tenue Dame</div><div class="mb g3" data-t="c">🧣 Réserver une écharpe</div>`},
-{t:'Écrivez votre prénom, votre nom, puis votre numéro de téléphone WhatsApp. Ces trois cases sont obligatoires.',tg:['a','b','c'],m:`<div class="gh">1. COORDONNÉES</div><div style="display:flex;gap:6px"><div class="mi" style="flex:1" data-t="a">Prénom *</div><div class="mi" style="flex:1" data-t="b">Nom *</div></div><div class="mi" data-t="c">Téléphone (WhatsApp) *</div>`},
+{t:'Écrivez votre prénom, votre nom, après avoir choisi votre pays, votre numéro de téléphone WhatsApp. Attention : un numéro ne peut s’inscrire qu’une seule fois.',tg:['a','b','c'],m:`<div class="gh">1. COORDONNÉES</div><div style="display:flex;gap:6px"><div class="mi" style="flex:1" data-t="a">Prénom *</div><div class="mi" style="flex:1" data-t="b">Nom *</div></div><div class="mi" data-t="c">🇸🇳 +221 | Téléphone (WhatsApp) *</div>`},
 {t:'Entrez ensuite vos mesures, en centimètres. Mettez le mètre bien à plat, sans trop serrer. Si vous avez un doute sur une mesure, laissez la case vide, et écrivez vos remarques avec vos mots.',tg:['a','b','c'],m:`<div class="gh">2. MESURES (cm)</div><div style="display:flex;gap:6px"><div class="mi" style="flex:1" data-t="a">Tour de poitrine</div><div class="mi" style="flex:1" data-t="b">Tour de taille</div></div><div class="mi">Carrure / épaule</div><div class="mi">Longueur manche</div><div class="mi" data-t="c" style="height:56px">Remarques : écrivez avec vos mots…</div>`},
 {t:'Pour réserver votre écharpe, cochez la case écharpe, puis indiquez combien d’écharpes vous voulez.',tg:['a','b'],m:`<div class="gh">🧣 ÉCHARPE F.K.C.S.</div><div class="mi" data-t="a" style="display:flex;gap:8px;align-items:center;color:var(--tx)"><span style="width:16px;height:16px;border:2px solid var(--gold);border-radius:4px;display:inline-block;flex:none"></span> Je réserve mon écharpe officielle</div><div class="mi" data-t="b">Nombre d’écharpes : 1</div>`},
 {t:'Quand tout est bon, appuyez sur le bouton doré : Valider mon inscription.',tg:['a'],m:`<div class="mi">Prénom, nom, téléphone : ✓</div><div class="mi">Mesures : ✓</div><div class="mb g1" data-t="a" style="text-align:center;margin-top:30px">Valider mon inscription ➔</div>`},
@@ -232,17 +278,26 @@ const C=window.FKCS_CONFIG;
 if(C.firebase.apiKey){
  const G='https://www.gstatic.com/firebasejs/10.12.2/';
  const {initializeApp}=await import(G+'firebase-app.js');
- const {getFirestore,doc,runTransaction,collection,onSnapshot,deleteDoc,updateDoc}=await import(G+'firebase-firestore.js');
+ const {getFirestore,doc,runTransaction,collection,onSnapshot,deleteDoc,writeBatch,getDoc,setDoc}=await import(G+'firebase-firestore.js');
  const {getAuth,signInWithEmailAndPassword,signOut}=await import(G+'firebase-auth.js');
  const app=initializeApp(C.firebase),db=getFirestore(app),auth=getAuth(app);let unsub=null;
  window.FB={
   async register(r){const pre={homme:'H',femme:'F',echarpe:'E'}[r.section];let mat;
-   await runTransaction(db,async tx=>{const cr=doc(db,'counters',r.section);const c=await tx.get(cr);const n=(c.exists()?c.data().n:0)+1;mat=pre+'-'+String(n).padStart(3,'0');tx.set(cr,{n});tx.set(doc(db,'inscriptions',mat),{...r,matricule:mat,ts:Date.now()})});
+   await runTransaction(db,async tx=>{const cr=doc(db,'counters',r.section);const c=await tx.get(cr);const n=(c.exists()?c.data().n:0)+1;mat=pre+'-'+String(n).padStart(3,'0');tx.set(cr,{n});tx.set(doc(db,'inscriptions',mat),{...r,matricule:mat,ts:Date.now()});tx.set(doc(db,'phones',r.lock),{matricule:mat,ts:Date.now()});if(r.lock2)tx.set(doc(db,'phones',r.lock2),{matricule:mat,ts:Date.now()})});
    return mat},
   async login(code){try{await signInWithEmailAndPassword(auth,C.adminEmail,code);return 'admin'}catch(e){await signInWithEmailAndPassword(auth,C.guestEmail,code);return 'guest'}},
   watch(cb){if(unsub)unsub();unsub=onSnapshot(collection(db,'inscriptions'),s=>cb(s.docs.map(d=>d.data()).sort((a,b)=>(a.ts||0)-(b.ts||0))),e=>cb(null,e))},
   async logout(){if(unsub)unsub();unsub=null;try{await signOut(auth)}catch(e){}},
-  update:(id,u)=>updateDoc(doc(db,'inscriptions',id),u),
+  async update(id,u,oldK,newK){const b=writeBatch(db);
+   for(const k of newK){if(!oldK.includes(k)){const s=await getDoc(doc(db,'phones',k));if(s.exists()&&s.data().matricule!==id)throw{code:'duplicate'}}}
+   b.update(doc(db,'inscriptions',id),u);
+   oldK.filter(k=>!newK.includes(k)).forEach(k=>b.delete(doc(db,'phones',k)));
+   newK.filter(k=>!oldK.includes(k)).forEach(k=>b.set(doc(db,'phones',k),{matricule:id,ts:Date.now()}));
+   await b.commit()},
+  async lock(rows){const seen=new Set(),dups=[];let n=0;
+   for(const d of rows){const ks=[lockKey(d.section,d.telephone)];if(d.section!=='echarpe'&&hasScarf(d))ks.push(lockKey('echarpe',d.telephone));
+    for(const k of ks){if(seen.has(k)){dups.push(d.matricule+' ('+k.split('_')[0]+')');continue}seen.add(k);await setDoc(doc(db,'phones',k),{matricule:d.matricule,ts:Date.now(),legacy:true});n++}}
+   return{n,dups}},
   remove:id=>deleteDoc(doc(db,'inscriptions',id))
  };
 }
