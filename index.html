@@ -94,7 +94,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--gold)}
 <h3>1. Coordonnées</h3>
 <div class="grid"><div><label>Prénom *</label><input id="prenom" autocomplete="given-name"></div><div><label>Nom *</label><input id="nom" autocomplete="family-name"></div>
 <div class="full"><label>Téléphone (WhatsApp) * — choisissez d’abord le pays</label><div style="display:flex;gap:8px"><select id="cc" style="width:50%;flex:none;font-size:15px" onchange="$('cco').classList.toggle('hidden',this.value!=='x')"><option value="221">🇸🇳 +221 Sénégal</option><option value="222">🇲🇷 +222 Mauritanie</option><option value="33">🇫🇷 +33 France</option><option value="49">🇩🇪 +49 Allemagne</option><option value="32">🇧🇪 +32 Belgique</option><option value="34">🇪🇸 +34 Espagne</option><option value="x">🌍 Autre pays</option></select><input id="tel" type="tel" inputmode="tel" placeholder="Votre numéro" autocomplete="tel-national"></div><input id="cco" class="hidden" inputmode="numeric" placeholder="Indicatif du pays, ex : 39" style="margin-top:8px"></div></div>
-<div id="fh" class="hidden"><h3 style="margin-top:18px">2. Mesures (cm)</h3><div class="sub">— TUNIQUE —</div><div class="grid" id="gh1"></div><div class="sub">— PANTALON —</div><div class="grid" id="gh2"></div></div>
+<div id="fh" class="hidden"><h3 style="margin-top:18px">2. Mesures (cm)</h3><div class="sub">— TUNIQUE —</div><div class="grid" id="gh1"></div><div class="sub">— PANTALON —</div><div class="grid" id="gh2"></div><label style="margin-top:12px">Ou taille standard (si pas de mesures en cm)</label><select id="hstd"><option value="">— Choisir —</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option><option>3XL</option><option>4XL</option><option>5XL</option></select></div>
 <div id="ff" class="hidden"><h3 style="margin-top:18px">2. Mesures robe (cm)</h3><details class="tips"><summary>📏 Comment prendre chaque mesure ?</summary><p><b>Poitrine</b> : autour de la partie la plus forte, mètre bien droit.<br><b>Taille</b> : à l’endroit le plus fin du ventre.<br><b>Hanches</b> : autour de la partie la plus large.<br><b>Épaule</b> : d’un bout d’épaule à l’autre, dans le dos.<br><b>Manche</b> : du bout de l’épaule jusqu’où vous voulez que la manche s’arrête.<br><b>Tour de bras</b> : autour du haut du bras.<br><b>Buste</b> : de l’épaule (près du cou) jusqu’à la taille.<br><b>Longueur robe</b> : de l’épaule jusqu’à la longueur voulue (genou, cheville…).<br><b>Tour du bas</b> : largeur voulue au bas de la robe.<br><i>Pas sûre ? Mesurez à plat une robe qui vous va bien, ou écrivez vos précisions dans la case « Remarques » plus bas.</i></p></details><div class="grid" id="gf"></div>
 <label style="margin-top:12px">Ou taille standard (si pas de mesures)</label><select id="std"><option value="">— Choisir —</option><option>XS</option><option>S</option><option>M</option><option>L</option><option>XL</option><option>XXL</option><option>3XL</option><option>4XL</option><option>5XL</option></select></div>
 <div id="scbox"><h3 style="margin-top:18px">🧣 Écharpe F.K.C.S.</h3><label class="chk"><input type="checkbox" id="sc" onchange="$('scq').classList.toggle('hidden',!this.checked);calcTot()"><span>Je réserve mon écharpe officielle (satin blanc, 25 × 180 cm, franges)</span></label></div>
@@ -158,7 +158,7 @@ async function submitForm(e){e.preventDefault();load();
  if(!prenom||!nom){$('err').textContent='Merci de remplir le prénom et le nom.';return}
  if(T.err){$('err').textContent=T.err;return}const tel=T.full;
  const m={};
- if(sec==='homme'){[...H1,...H2].forEach(([k])=>m[k]=$('h_'+k).value||'-')}
+ if(sec==='homme'){[...H1,...H2].forEach(([k])=>m[k]=$('h_'+k).value||'-');m.std=$('hstd').value||'-'}
  else if(sec==='femme'){F.forEach(([k])=>m[k]=$('f_'+k).value||'-');m.std=$('std').value||'-'}
  m.echarpe=$('sc').checked?String(Math.min(20,Math.max(1,parseInt($('scn').value)||1))):'-';
  m.remarque=$('note').value.trim()||'-';
@@ -194,13 +194,13 @@ function detail(i){const d=data[i];$('dm').textContent=d.matricule;
 async function del(i){if(role!=='admin')return;if(confirm('Supprimer cette inscription ?')){
  if(CLOUD){try{await FB.remove(data[i].matricule)}catch(x){alert('Suppression impossible ('+(x.code||'erreur')+')')}}
  else{data.splice(i,1);save();renderList()}}}
-function edit(i){const d=data[i],m=d.mesures||{};const keys=d.section==='homme'?[...H1,...H2]:d.section==='femme'?[...F,['std','Taille standard (XS…5XL)']]:[];
+function edit(i){const d=data[i],m=d.mesures||{};const keys=d.section==='homme'?[...H1,...H2,['std','Taille standard (XS…5XL)']]:d.section==='femme'?[...F,['std','Taille standard (XS…5XL)']]:[];
  let h=`<div class="grid"><div><label>Prénom</label><input id="e_prenom" value="${esc(d.prenom)}"></div><div><label>Nom</label><input id="e_nom" value="${esc(d.nom)}"></div><div class="full"><label>Téléphone</label><input id="e_tel" value="${esc(d.telephone)}"></div>`;
  keys.forEach(([k,l])=>{h+=`<div class="full"><label>${l}${k==='std'?'':' (cm)'}</label><input id="e_${k}" value="${esc(m[k]&&m[k]!=='-'?m[k]:'')}"></div>`});
  h+=`<div class="full"><label>Écharpes (nombre, 0 = aucune)</label><input id="e_echarpe" type="number" min="0" max="20" value="${esc(m.echarpe&&m.echarpe!=='-'?m.echarpe:0)}"></div><div class="full"><label>Remarques</label><textarea id="e_remarque">${esc(m.remarque&&m.remarque!=='-'?m.remarque:'')}</textarea></div></div><button class="cta" onclick="saveEdit(${i})">Enregistrer</button><button class="sec" onclick="detail(${i})">Annuler</button>`;
  $('dd').innerHTML=h;$('edbtn').classList.add('hidden')}
 async function saveEdit(i){if(role!=='admin')return;const d=data[i],m={...(d.mesures||{})};
- (d.section==='homme'?[...H1,...H2]:d.section==='femme'?[...F,['std']]:[]).forEach(([k])=>{m[k]=$('e_'+k).value.trim()||'-'});
+ (d.section==='homme'?[...H1,...H2,['std']]:d.section==='femme'?[...F,['std']]:[]).forEach(([k])=>{m[k]=$('e_'+k).value.trim()||'-'});
  const n=parseInt($('e_echarpe').value)||0;m.echarpe=n>0?String(Math.min(20,n)):'-';m.remarque=$('e_remarque').value.trim()||'-';
  const tel2=fixTel($('e_tel').value);if(!tel2){alert('Numéro invalide. Écrivez-le avec l’indicatif, par exemple +221771234567');return}
  const u={prenom:$('e_prenom').value.trim()||d.prenom,nom:$('e_nom').value.trim()||d.nom,telephone:tel2,mesures:m};
@@ -246,7 +246,7 @@ function printList(sec){load();const L=data.filter(d=>sec==='echarpe'?hasScarf(d
  else{let sum=0;const K=sec==='homme'?[...H1.map(x=>['T',x]),...H2.map(x=>['P',x])]:F.map(x=>['',x]);
   L.forEach(d=>{const m=d.mesures||{};sum+=d.prix?(+d.prix.total||0):0;h+='<div class="pc"><h2>'+esc(d.matricule)+' – '+esc(d.nom)+' '+esc(d.prenom)+' – Tél : '+esc(d.telephone)+'</h2><div class="pm">'+
    K.map(([g,[k,l]])=>'<div>'+(g==='T'?'Tunique : ':g==='P'?'Pantalon : ':'')+esc(l)+' : <b>'+esc(m[k]&&m[k]!=='-'?m[k]+' cm':'—')+'</b></div>').join('')+
-   (sec==='femme'?'<div>Taille standard : <b>'+esc(m.std&&m.std!=='-'?m.std:'—')+'</b></div>':'')+
+   (sec!=='echarpe'?'<div>Taille standard : <b>'+esc(m.std&&m.std!=='-'?m.std:'—')+'</b></div>':'')+
    '<div>Écharpes : <b>'+esc(m.echarpe&&m.echarpe!=='-'?m.echarpe:'0')+'</b></div><div>À payer : <b>'+(d.prix?fmt(d.prix.total):'—')+'</b></div></div>'+
    (m.remarque&&m.remarque!=='-'?'<div style="font-size:12px;margin-top:6px"><b>Remarques :</b> '+esc(m.remarque)+'</div>':'')+'</div>'});
   h+='<p style="font-size:14px"><b>Total à encaisser : '+fmt(sum)+'</b></p>'}
